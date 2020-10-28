@@ -71,11 +71,14 @@ unsigned int directionA=3;  //0 shang 1 xia 2zuo 3you
 unsigned int directionB=3;
 
 
+
+
 void init_sharedmemory(void)
 {
     id=shmget(KEY,SIZE,IPC_CREAT|0666);
-    memset(sharedMem,0x00,SIZE);
     sharedMem = (char*)shmat(id,NULL,0);
+    memset(sharedMem,0x00,SIZE);
+    
 }
 
 
@@ -87,16 +90,16 @@ void getB() ///通过共享内存获取B运动方向
         switch (dir)
         {
         case 'w':
-            directionA=0;
+            directionB=0;
             break;
         case 's':
-            directionA=1;
+            directionB=1;
             break;
         case 'a':
-            directionA=2;
+            directionB=2;
             break;
         case 'd':
-            directionA=3;
+            directionB=3;
             break;
         
         default:
@@ -122,7 +125,7 @@ long int screensize = 0;//屏幕大小
 
 
 
-
+void TFT_LCD_Test(void);//LCD测试程序
 //初始化屏幕
 void init_screen()
 {
@@ -132,29 +135,33 @@ void init_screen()
         perror("open device buttons failed!");
         exit(1);
     }
-    printf("lcd is open\n");
+    //printf("lcd is open\n");
     if(ioctl(display_fd,FBIOGET_FSCREENINFO,&fb_fix))
     {
-        printf("Error reading fb fixed information.\n");
+        ////printf("Error reading fb fixed information.\n");
         exit(1);
     }
-    printf("Get fixed screen information OK\n");
+    //printf("Get fixed screen information OK\n");
     if(ioctl(display_fd,FBIOGET_VSCREENINFO,&fb_var))
     {
-        printf("Error reading fb variable information.\n");
+        ////printf("Error reading fb variable information.\n");
         exit(1);
     }
     screensize=fb_var.xres*fb_var.yres*fb_var.bits_per_pixel/8;
-    printf("fb_var.xres:%d\n", fb_var.xres);
-	printf("fb_var.xres:%d\n", fb_var.yres);
+    //printf("fb_var.xres:%d\n", fb_var.xres);
+	//printf("fb_var.xres:%d\n", fb_var.yres);
     fb_base_addr = (char*)mmap(NULL, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, display_fd, 0);
-	printf("buffer is ok\n");
+	//printf("buffer is ok\n");
 	if (-1 == (int)fb_base_addr)
 	{
-		printf("errno\n");
+		////printf("errno\n");
 		exit(1);
 	}
 	memset(fb_base_addr, 0xff, screensize);
+    //TFT_LCD_Test();
+    ////printf("Screen inited\n");
+    return;
+    
 }
 
 
@@ -338,6 +345,9 @@ void initbuttons()
         perror("open device buttons failed!");
         exit(1);
     }
+    char current_buttons[2];
+    char realchar;
+    
     
 
 }
@@ -352,12 +362,8 @@ void getA() //获取A的按键方向
         perror("read buttons:");
         exit(1);
     }
-    if(first_flag==0)
-        first_flag=1;
-        else
+    if(buttons[0]!=current_buttons[0]||buttons[1]!=current_buttons[1])
         {
-            if(buttons[0]!=current_buttons[0]||buttons[1]!=current_buttons[1])
-            {
                 buttons[0]=current_buttons[0];
                 buttons[1]=current_buttons[1];
                 switch (buttons[0])
@@ -413,8 +419,8 @@ void getA() //获取A的按键方向
             
             default:
                 break;
-            }
-        }
+    }
+
 
 }
 
@@ -502,6 +508,7 @@ void Draw(void)         //显示在屏幕上
             }
         }
     }
+    return;
 }
 
 
@@ -662,14 +669,28 @@ void game(void )
     initbuttons();
     init_sharedmemory();
     init_screen();
+    // //printf("LCD inited!\n");
+    // //printf("LCD inited!\n");
+    // //printf("LCD inited!\n");
     initSnake();
-   
-
-
-
-
+    ////printf("Snake init!\n");
+    drawSnake();
+    Draw();
     while(1)
     {
+        if(sharedMem[0]==NEW_DATA)
+        {
+            sharedMem[0]=OLD_DATA;
+            break;
+        }
+        
+
+    }
+
+        
+        while(1)
+        {
+        
         unsigned int res;
         getA();
         getB();
@@ -685,13 +706,13 @@ void game(void )
             {
             case 0:
                 /* code */
-                printf("平局");
+                //printf("平局");
                 break;
             case 1:
-                printf("A获胜");
+                //printf("A获胜");
                 break;
             case 2:
-                printf("B获胜");
+                //printf("B获胜");
                 break;
             
             default:
@@ -702,9 +723,9 @@ void game(void )
         }
 
         
-    delay(1000*10);
-    
+        delay(1000*10);
     }
+    
 }
 	
 
@@ -840,7 +861,7 @@ int  main(void)
 						case 48:realchar='D';break;
 					}break;
 				}
-				printf("key(%c) is pressed!\n", realchar);
+				//printf("key(%c) is pressed!\n", realchar);
 			}
 		}
         switch (realchar)
@@ -899,13 +920,13 @@ int  main(void)
             {
             case 0:
                 /* code 
-                printf("平局");
+                //printf("平局");
                 break;
             case 1:
-                printf("A获胜");
+                //printf("A获胜");
                 break;
             case 2:
-                printf("B获胜");
+                //printf("B获胜");
                 break;
             
             default:
