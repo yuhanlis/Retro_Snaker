@@ -84,22 +84,24 @@ void init_sharedmemory(void)
 
 void getB() ///通过共享内存获取B运动方向
 {
+    unsigned int olddirection=directionB;
+    unsigned int newdirection;
     if(sharedMem[0]==NEW_DATA)
     {
         char dir = sharedMem[1];
         switch (dir)
         {
         case 'w':
-            directionB=0;
+            newdirection=0;
             break;
         case 's':
-            directionB=1;
+            newdirection=1;
             break;
         case 'a':
-            directionB=2;
+            newdirection=2;
             break;
         case 'd':
-            directionB=3;
+            newdirection=3;
             break;
         
         default:
@@ -107,6 +109,9 @@ void getB() ///通过共享内存获取B运动方向
         }
 
     }
+    if(newdirection==olddirection)return;
+    else
+        directionB=newdirection;
 }
 
 
@@ -402,24 +407,33 @@ void getA() //获取A的按键方向
 					}break;
                 }
             }
+            unsigned int olddirection=directionA;
+            unsigned int newdirection=directionA;
             switch (realchar)
             {
             case '2':
-                directionA=0;
+                newdirection=0;
                 break;
             case '5':
-                directionA=1;
+                newdirection=1;
                 break;
             case '4':
-                directionA=2;
+                newdirection=2;
                 break;
             case '6':
-                directionA=3;
+                newdirection=3;
                 break;
             
             default:
                 break;
-    }
+            }
+            if(olddirection==newdirection)return;
+            else
+            {
+                directionA=newdirection;
+                return;
+            }
+            
 
 
 }
